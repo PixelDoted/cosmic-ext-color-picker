@@ -1032,6 +1032,7 @@ version = "1.0.0"
 dependencies = [
  "ashpd 0.9.2",
  "bytemuck",
+ "hex",
  "i18n-embed",
  "i18n-embed-fl",
  "libcosmic",

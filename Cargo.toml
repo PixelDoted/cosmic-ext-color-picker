@@ -12,6 +12,7 @@ once_cell = "1.19.0"
 open = "5.1.3"
 rust-embed = "8.3.0"
 ashpd = "0.9.1"
+hex = "0.4.3"
 
 [dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic.git"

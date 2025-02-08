@@ -3,6 +3,7 @@ app-title = Color Picker for COSMIC
 ## Menu
 view = View
 graphs = Graphs
+expanded = expanded
 menu-about = About
 
 ## About

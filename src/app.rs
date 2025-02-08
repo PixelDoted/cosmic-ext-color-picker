@@ -20,6 +20,7 @@ pub struct ColorPicker {
     pub spaces: Vec<ColorSpace>,
     last_edited: usize,
     show_graphs: bool,
+    expanded: bool,
 
     colorspace_selections: Vec<ColorSpaceCombo>,
     colorspace_names: Vec<String>,
@@ -42,6 +43,7 @@ pub enum Message {
     RemoveSpace(usize),
 
     ToggleGraphs,
+    ToggleExpanded,
     ToggleAboutPage,
     LaunchUrl(String),
 
@@ -54,6 +56,7 @@ pub enum Message {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Action {
     ToggleGraphs,
+    ToggleExpanded,
     About,
 }
 
@@ -63,6 +66,7 @@ impl MenuAction for Action {
     fn message(&self) -> Message {
         match self {
             Action::ToggleGraphs => Message::ToggleGraphs,
+            Action::ToggleExpanded => Message::ToggleExpanded,
             Action::About => Message::ToggleAboutPage,
         }
     }
@@ -97,6 +101,12 @@ impl Application for ColorPicker {
                         self.show_graphs,
                         Action::ToggleGraphs,
                     ),
+                    menu::Item::CheckBox(
+                        fl!("expanded"),
+                        None,
+                        self.expanded,
+                        Action::ToggleExpanded,
+                    ),
                     menu::Item::Button(fl!("menu-about"), None, Action::About),
                 ],
             ),
@@ -117,11 +127,19 @@ impl Application for ColorPicker {
             },
             Action::ToggleGraphs,
         );
+        keybinds.insert(
+            menu::KeyBind {
+                modifiers: vec![menu::key_bind::Modifier::Ctrl],
+                key: Key::Character("e".into()),
+            },
+            Action::ToggleExpanded,
+        );
 
         let mut app = ColorPicker {
             spaces: vec![ColorSpace::default()],
             last_edited: 0,
             show_graphs: false,
+            expanded: false,
 
             colorspace_selections: vec![
                 ColorSpaceCombo::Rgb,
@@ -174,6 +192,9 @@ impl Application for ColorPicker {
 
             Message::ToggleGraphs => {
                 self.show_graphs = !self.show_graphs;
+            }
+            Message::ToggleExpanded => {
+                self.expanded = !self.expanded;
             }
             Message::ToggleAboutPage => {
                 self.core.window.show_context = !self.core.window.show_context;
@@ -267,66 +288,100 @@ impl Application for ColorPicker {
                 (rgb[2] - min_rgb) / max_rgb,
             ];
 
-            let sidebar = widget::Container::new(
-                widget::column::with_capacity(3)
-                    .push(
-                        widget::row::with_capacity(2)
-                            .push(
-                                color_block(Color::from_rgb(rgb[0], rgb[1], rgb[2]))
-                                    .border([true, false, false, true])
-                                    .height(100.0),
-                            )
-                            .push(
-                                color_block(Color::from_rgb(norm_rgb[0], norm_rgb[1], norm_rgb[2]))
-                                    .border([false, true, true, false])
-                                    .height(100.0),
-                            ),
-                    )
-                    .push(
-                        widget::row::with_capacity(3)
-                            .push(
-                                widget::button::icon(widget::icon::from_name("edit-copy-symbolic"))
-                                    .on_press(Message::CopyToClipboard(index))
-                                    .tooltip("Copy to Clipboard"),
-                            )
-                            .push(
-                                widget::button::icon(widget::icon::from_name("edit-find-symbolic"))
-                                    .on_press(Message::PickScreenRequest(index))
-                                    .tooltip("Pick a color from the screen"),
-                            )
-                            .push(widget::Space::with_width(Length::Fill))
-                            .push(
-                                widget::button::icon(widget::icon::from_name(
-                                    "user-trash-full-symbolic",
-                                ))
-                                .on_press(Message::RemoveSpace(index))
-                                .class(theme::Button::Destructive)
-                                .tooltip("Delete"),
-                            ),
-                    )
-                    .push(
-                        widget::dropdown(&self.colorspace_names, Some(combo_selection), move |t| {
-                            Message::ChangeColorSpace {
-                                index,
-                                selected: self.colorspace_selections[t].clone(),
-                            }
-                        })
-                        .width(Length::Fill),
-                    )
-                    .spacing(10.0),
-            )
-            .class(theme::Container::Card)
-            .padding(10.0);
+            let mut sidebar = widget::column::with_capacity(3)
+                .push(
+                    widget::row::with_capacity(2)
+                        .push(
+                            color_block(Color::from_rgb(rgb[0], rgb[1], rgb[2]))
+                                .border([true, false, false, true])
+                                .height(100.0),
+                        )
+                        .push(
+                            color_block(Color::from_rgb(norm_rgb[0], norm_rgb[1], norm_rgb[2]))
+                                .border([false, true, true, false])
+                                .height(100.0),
+                        ),
+                )
+                .push(
+                    widget::row::with_capacity(3)
+                        .push(
+                            widget::button::icon(widget::icon::from_name("edit-copy-symbolic"))
+                                .on_press(Message::CopyToClipboard(index))
+                                .tooltip("Copy to Clipboard"),
+                        )
+                        .push(
+                            widget::button::icon(widget::icon::from_name("edit-find-symbolic"))
+                                .on_press(Message::PickScreenRequest(index))
+                                .tooltip("Pick a color from the screen"),
+                        )
+                        .push(widget::Space::with_width(Length::Fill))
+                        .push(
+                            widget::button::icon(widget::icon::from_name(
+                                "user-trash-full-symbolic",
+                            ))
+                            .on_press(Message::RemoveSpace(index))
+                            .class(theme::Button::Destructive)
+                            .tooltip("Delete"),
+                        ),
+                )
+                .push(
+                    widget::dropdown(&self.colorspace_names, Some(combo_selection), move |t| {
+                        Message::ChangeColorSpace {
+                            index,
+                            selected: self.colorspace_selections[t].clone(),
+                        }
+                    })
+                    .width(Length::Fill),
+                )
+                .spacing(10.0);
 
-            contents = contents.push(widget::container(
+            if self.expanded {
+                let srgb = [
+                    (norm_rgb[0] * 255.0) as u8,
+                    (norm_rgb[1] * 255.0) as u8,
+                    (norm_rgb[2] * 255.0) as u8,
+                ];
+                let srgb_text = format!("{}, {}, {}", srgb[0], srgb[1], srgb[2]);
+                let hex_text = format!("#{}", hex::encode(srgb));
+
+                let col = widget::ListColumn::new()
+                    .add(
+                        widget::text_input("0, 0, 0", srgb_text)
+                            .on_input(|_| Message::None)
+                            .label("sRGB"),
+                    )
+                    .add(
+                        widget::text_input("#000000", hex_text)
+                            .on_input(|_| Message::None)
+                            .label("Hex"),
+                    );
+
+                sidebar = sidebar.push(col);
+            }
+
+            let sidebar_container = widget::Container::new(sidebar)
+                .class(theme::Container::Card)
+                .padding(10.0);
+
+            let elem: Element<'_, Message> = if self.expanded {
+                widget::row::with_capacity(2)
+                    .push(sidebar_container)
+                    .push(content.map(move |message| Message::ColorSpace { index, message }))
+                    .spacing(10.0)
+                    .padding(10.0)
+                    .width(590.0)
+                    .into()
+            } else {
                 widget::column::with_capacity(2)
-                    .push(sidebar)
+                    .push(sidebar_container)
                     .push(content.map(move |message| Message::ColorSpace { index, message }))
                     .spacing(10.0)
                     .padding(10.0)
                     .width(300.0)
-                    .apply(widget::scrollable),
-            ));
+                    .into()
+            };
+
+            contents = contents.push(widget::container(elem.apply(widget::scrollable)));
         }
 
         {
