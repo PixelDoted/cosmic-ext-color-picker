@@ -106,7 +106,7 @@ impl ColorSpace {
         Self::Cmyk(Cmyk::from_rgb(rgb))
     }
 
-    pub fn from_rgb(&mut self, rgb_in: [f32; 3]) {
+    pub fn convert_from_rgb(&mut self, rgb_in: [f32; 3]) {
         match self {
             ColorSpace::Rgb(rgb) => *rgb = rgb::Rgb::from_rgb(rgb_in),
             ColorSpace::Hsv(hsv) => *hsv = hsv::Hsv::from_rgb(rgb_in),

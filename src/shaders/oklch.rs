@@ -19,9 +19,9 @@ impl<const M: u32, Message> shader::Program<Message> for ColorGraph<M> {
 
     fn draw(
         &self,
-        state: &Self::State,
-        cursor: cosmic::iced_core::mouse::Cursor,
-        bounds: cosmic::iced::Rectangle,
+        _state: &Self::State,
+        _cursor: cosmic::iced_core::mouse::Cursor,
+        _bounds: cosmic::iced::Rectangle,
     ) -> Self::Primitive {
         Primitive::<M>::new(self.lightness, self.chroma, self.hue)
     }
@@ -52,13 +52,12 @@ impl<const M: u32> shader::Primitive for Primitive<M> {
         queue: &wgpu::Queue,
         format: wgpu::TextureFormat,
         storage: &mut Storage,
-        bounds: &Rectangle,
-        viewport: &Viewport,
+        _bounds: &Rectangle,
+        _viewport: &Viewport,
     ) {
         if !storage.has::<ShaderPipeline<Uniforms, M>>() {
             storage.store(ShaderPipeline::<Uniforms, M>::new(
                 device,
-                queue,
                 format,
                 include_str!("oklch.wgsl"),
             ));

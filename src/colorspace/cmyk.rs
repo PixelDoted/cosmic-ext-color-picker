@@ -201,6 +201,7 @@ impl Cmyk {
     }
 }
 
+#[allow(clippy::many_single_char_names)]
 fn cmyk_to_rgb(c: f32, m: f32, y: f32, k: f32) -> [f32; 3] {
     let inv_k = 1.0 - k;
     let r = (1.0 - c + k) * inv_k;
@@ -210,6 +211,7 @@ fn cmyk_to_rgb(c: f32, m: f32, y: f32, k: f32) -> [f32; 3] {
     [r, g, b]
 }
 
+#[allow(clippy::many_single_char_names)]
 fn rgb_to_cmyk(r: f32, g: f32, b: f32) -> [f32; 4] {
     let inv_k = r.max(g).max(b);
     if inv_k <= f32::EPSILON {

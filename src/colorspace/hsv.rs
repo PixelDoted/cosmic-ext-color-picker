@@ -189,6 +189,7 @@ impl Hsv {
     }
 }
 
+#[allow(clippy::many_single_char_names)]
 fn hsv_to_rgb(h: f32, s: f32, v: f32) -> [f32; 3] {
     let c = v * s;
     let h_ = h / 60.0;
@@ -209,25 +210,11 @@ fn hsv_to_rgb(h: f32, s: f32, v: f32) -> [f32; 3] {
         (c, 0.0, x)
     };
 
-    // let (r1, g1, b1) = if 0.0 <= h_ && h_ < 1.0 {
-    //     (c, x, 0.0)
-    // } else if 1.0 <= h_ && h_ < 2.0 {
-    //     (x, c, 0.0)
-    // } else if 2.0 <= h_ && h_ < 3.0 {
-    //     (0.0, c, x)
-    // } else if 3.0 <= h_ && h_ < 4.0 {
-    //     (0.0, x, c)
-    // } else if 4.0 <= h_ && h_ < 5.0 {
-    //     (x, 0.0, c)
-    // } else {
-    //     // otherwise (5.0 <= h' < 6.0)
-    //     (c, 0.0, x)
-    // };
-
     let m = v - c;
     [r1 + m, g1 + m, b1 + m]
 }
 
+#[allow(clippy::many_single_char_names, clippy::float_cmp)]
 fn rgb_to_hsv(r: f32, g: f32, b: f32) -> [f32; 3] {
     let x_max = r.max(g).max(b);
     let x_min = r.min(g).min(b);

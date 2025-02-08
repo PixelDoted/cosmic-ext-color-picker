@@ -198,6 +198,7 @@ impl Oklch {
     }
 }
 
+#[allow(clippy::many_single_char_names)]
 fn oklch_to_rgb(l: f32, c: f32, h: f32) -> [f32; 3] {
     let h = h.to_radians();
     let a = c * h.cos();
@@ -206,6 +207,7 @@ fn oklch_to_rgb(l: f32, c: f32, h: f32) -> [f32; 3] {
     super::oklab::oklab_to_rgb(l, a, b)
 }
 
+#[allow(clippy::many_single_char_names)]
 fn rgb_to_oklch(r: f32, g: f32, b: f32) -> [f32; 3] {
     let lab = super::oklab::rgb_to_oklab(r, g, b);
     let mut lch = [

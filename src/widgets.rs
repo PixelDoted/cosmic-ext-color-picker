@@ -1,19 +1,15 @@
-use std::{f32::consts::FRAC_PI_2, ops::RangeInclusive, rc::Rc};
+use std::{f32::consts::FRAC_PI_2, ops::RangeInclusive};
 
 use cosmic::{
     iced::{
         border,
         gradient::{ColorStop, Linear},
         mouse, touch, Background, Border, Color, Element, Event, Gradient, Length, Padding, Point,
-        Radians, Rectangle, Shadow, Size,
+        Rectangle, Shadow, Size,
     },
     iced_core::{layout, renderer, widget::tree},
     theme,
-    widget::{
-        self,
-        slider::{self, HandleShape, RailBackground},
-        Widget,
-    },
+    widget::{self, Widget},
 };
 
 pub struct ColorBlock {
@@ -63,6 +59,7 @@ impl<'a, Message: 'a> From<ColorBlock> for cosmic::Element<'a, Message> {
                 let cosmic = theme.cosmic();
                 let radius = cosmic.corner_radii.radius_xs;
 
+                #[allow(clippy::cast_lossless)]
                 cosmic::widget::container::Style {
                     background: Some(value.color.into()),
                     border: Border {
@@ -100,7 +97,7 @@ where
     ColorSlider {
         value,
         range,
-        background: Gradient::Linear(Linear::new(FRAC_PI_2).add_stops(color_stops.iter().cloned())),
+        background: Gradient::Linear(Linear::new(FRAC_PI_2).add_stops(color_stops.iter().copied())),
         scroll_steps: 0.01,
         on_change: Box::new(on_change),
     }
@@ -115,7 +112,7 @@ pub struct ColorSlider<'a, Message> {
     on_change: Box<dyn Fn(f32) -> Message + 'a>,
 }
 
-impl<'a, Message, Theme, Renderer> Widget<Message, Theme, Renderer> for ColorSlider<'a, Message>
+impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for ColorSlider<'_, Message>
 where
     Renderer: renderer::Renderer,
 {
@@ -132,8 +129,8 @@ where
 
     fn layout(
         &self,
-        tree: &mut cosmic::iced_core::widget::Tree,
-        renderer: &Renderer,
+        _tree: &mut cosmic::iced_core::widget::Tree,
+        _renderer: &Renderer,
         limits: &cosmic::iced_core::layout::Limits,
     ) -> cosmic::iced_core::layout::Node {
         layout::Node::new(Size::new(limits.max().width, 15.0))
@@ -141,13 +138,13 @@ where
 
     fn draw(
         &self,
-        tree: &cosmic::iced_core::widget::Tree,
+        _tree: &cosmic::iced_core::widget::Tree,
         renderer: &mut Renderer,
-        theme: &Theme,
-        style: &renderer::Style,
+        _theme: &Theme,
+        _style: &renderer::Style,
         layout: cosmic::iced_core::Layout<'_>,
-        cursor: cosmic::iced_core::mouse::Cursor,
-        viewport: &cosmic::iced::Rectangle,
+        _cursor: cosmic::iced_core::mouse::Cursor,
+        _viewport: &cosmic::iced::Rectangle,
     ) {
         let bounds = layout.bounds();
         let rail_bounds = bounds.shrink(Padding::new(0.0).top(3.0).bottom(3.0));
@@ -217,8 +214,7 @@ where
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
-            | Event::Touch(touch::Event::FingerLifted { .. })
-            | Event::Touch(touch::Event::FingerLost { .. }) => {
+            | Event::Touch(touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. }) => {
                 if state.is_dragging {
                     state.is_dragging = false;
                     return cosmic::iced_core::event::Status::Captured;
@@ -238,12 +234,8 @@ where
             Event::Mouse(mouse::Event::WheelScrolled { delta }) => {
                 if !state.is_dragging && cursor.is_over(layout.bounds()) {
                     match delta {
-                        mouse::ScrollDelta::Lines { x, y } => {
-                            self.value += *y * self.scroll_steps;
-                            self.value = self.value.clamp(*self.range.start(), *self.range.end());
-                            shell.publish((self.on_change)(self.value));
-                        }
-                        mouse::ScrollDelta::Pixels { x, y } => {
+                        mouse::ScrollDelta::Lines { y, .. }
+                        | mouse::ScrollDelta::Pixels { y, .. } => {
                             self.value += *y * self.scroll_steps;
                             self.value = self.value.clamp(*self.range.start(), *self.range.end());
                             shell.publish((self.on_change)(self.value));

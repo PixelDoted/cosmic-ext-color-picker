@@ -19,9 +19,9 @@ impl<Message> shader::Program<Message> for ColorGraph {
 
     fn draw(
         &self,
-        state: &Self::State,
-        cursor: cosmic::iced_core::mouse::Cursor,
-        bounds: cosmic::iced::Rectangle,
+        _state: &Self::State,
+        _cursor: cosmic::iced_core::mouse::Cursor,
+        _bounds: cosmic::iced::Rectangle,
     ) -> Self::Primitive {
         Primitive::new(self.hue, self.saturation, self.value)
     }
@@ -51,13 +51,12 @@ impl shader::Primitive for Primitive {
         queue: &wgpu::Queue,
         format: wgpu::TextureFormat,
         storage: &mut Storage,
-        bounds: &Rectangle,
-        viewport: &Viewport,
+        _bounds: &Rectangle,
+        _viewport: &Viewport,
     ) {
         if !storage.has::<ShaderPipeline<Uniforms, 0>>() {
             storage.store(ShaderPipeline::<Uniforms, 0>::new(
                 device,
-                queue,
                 format,
                 include_str!("hsv.wgsl"),
             ));

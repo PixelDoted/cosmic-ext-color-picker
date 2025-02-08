@@ -156,7 +156,7 @@ impl Application for ColorPicker {
         app.colorspace_names = app
             .colorspace_selections
             .iter()
-            .map(|cs| cs.to_string())
+            .map(ToString::to_string)
             .collect();
 
         let command = app.set_window_title(fl!("app-title"));
@@ -217,9 +217,9 @@ impl Application for ColorPicker {
                         return Message::None;
                     };
 
-                    let res = req.response();
-                    let Ok(color) = res else {
-                        println!("{res:?}");
+                    let result = req.response();
+                    let Ok(color) = result else {
+                        println!("{result:?}");
                         return Message::None;
                     };
 
@@ -230,10 +230,12 @@ impl Application for ColorPicker {
             }
             Message::PickScreenResponse((index, color)) => {
                 let (r, g, b) = (color.red(), color.green(), color.blue());
-                self.spaces[index].from_rgb([r as f32, g as f32, b as f32])
+
+                #[allow(clippy::cast_possible_truncation)]
+                self.spaces[index].convert_from_rgb([r as f32, g as f32, b as f32]);
             }
             Message::Key(key, modifiers) => {
-                for (key_bind, action) in self.keybinds.iter() {
+                for (key_bind, action) in &self.keybinds {
                     if key_bind.matches(modifiers, &key) {
                         return self.update(action.message());
                     }
@@ -336,6 +338,7 @@ impl Application for ColorPicker {
                 .spacing(10.0);
 
             if self.expanded {
+                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
                 let srgb = [
                     (norm_rgb[0] * 255.0) as u8,
                     (norm_rgb[1] * 255.0) as u8,
@@ -409,7 +412,7 @@ impl Application for ColorPicker {
             return None;
         }
 
-        Some(self.about())
+        Some(Self::about())
     }
 
     fn subscription(&self) -> Subscription<Self::Message> {
@@ -439,7 +442,7 @@ impl ColorPicker {
         clipboard::write(contents)
     }
 
-    fn about(&self) -> ContextDrawer<Message> {
+    fn about<'a>() -> ContextDrawer<'a, Message> {
         let repository = "https://github.com/PixelDoted/cosmic-ext-color-picker";
         let hash = env!("VERGEN_GIT_SHA");
         let short_hash = &hash[0..7];
@@ -460,8 +463,7 @@ impl ColorPicker {
             .push(
                 widget::button::link(fl!("git-description", hash = short_hash, date = date))
                     .on_press(Message::LaunchUrl(format!(
-                        "{}/commits/{}",
-                        repository, hash
+                        "{repository}/commits/{hash}"
                     )))
                     .padding(0),
             )

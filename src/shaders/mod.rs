@@ -14,12 +14,7 @@ pub struct ShaderPipeline<T, const ID: u32> {
 }
 
 impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
-    pub fn new(
-        device: &wgpu::Device,
-        queue: &wgpu::Queue,
-        format: wgpu::TextureFormat,
-        shader: &str,
-    ) -> Self {
+    pub fn new(device: &wgpu::Device, format: wgpu::TextureFormat, shader: &str) -> Self {
         let data_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("shader data buffer"),
             size: std::mem::size_of::<T>() as u64,
@@ -76,7 +71,7 @@ impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
                 module: &vertex_shader,
                 entry_point: "vs_main",
                 buffers: &[],
-                compilation_options: Default::default(),
+                compilation_options: wgpu::PipelineCompilationOptions::default(),
             },
             primitive: wgpu::PrimitiveState::default(),
             depth_stencil: None,
@@ -89,7 +84,7 @@ impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
                     blend: Some(wgpu::BlendState::ALPHA_BLENDING),
                     write_mask: wgpu::ColorWrites::ALL,
                 })],
-                compilation_options: Default::default(),
+                compilation_options: wgpu::PipelineCompilationOptions::default(),
             }),
             multiview: None,
             cache: None,
@@ -99,7 +94,7 @@ impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
             pipeline,
             bind_group: uniform_bind_group,
             data: data_buffer,
-            phantom: PhantomData::default(),
+            phantom: PhantomData,
         }
     }
 
@@ -129,6 +124,7 @@ impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
         });
 
         pass.set_pipeline(&self.pipeline);
+        #[allow(clippy::cast_precision_loss)]
         pass.set_viewport(
             viewport.x as f32,
             viewport.y as f32,
