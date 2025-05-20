@@ -1,4 +1,4 @@
-app-title = COSMIC kleurenkiezer
+app-title = Kleurenkiezer voor COSMIC™ desktop
 
 ## Menu
 view = Beeld
