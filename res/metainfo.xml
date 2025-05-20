@@ -32,7 +32,8 @@
               <ul>
                   <li>Added "expanded" view</li>
                   <li>Added hex editing</li>
-                  <li>Added Dutch translation (#8, #9, #11)</li>
+                  <li>Appended ™ to COSMIC™ in translations (#11)</li>
+                  <li>Added Dutch translation (#8, #9)</li>
                   <li>Updated Portuguese translations (#7)</li>
               </ul>
           </description>
