@@ -1,12 +1,13 @@
-app-title = Seletor de cores para cósmico
+app-title = Seletor de Cores do COSMIC
 
 ## Menu
-view = Visualizar
+view = Exibir
 graphs = Gráficos
+expanded = Expandido
 menu-about = Sobre
 
 ## Sobre
-git-description = Git commit {$hash} on {$date}
+git-description = Git commit {$hash} de {$date}
 
 ## Espaços de Cor
 rgb = RGB
