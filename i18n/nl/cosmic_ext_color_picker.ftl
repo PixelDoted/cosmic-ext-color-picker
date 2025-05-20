@@ -3,6 +3,7 @@ app-title = COSMIC kleurenkiezer
 ## Menu
 view = Beeld
 graphs = Grafieken
+expanded = Uitgebreid
 menu-about = Over
 
 ## About
