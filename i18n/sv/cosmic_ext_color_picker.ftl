@@ -1,4 +1,4 @@
-app-title = COSMIC Color Picker
+app-title = Färgväljare för COSMIC™-skrivbordet
 
 ## Meny
 view = Visa
