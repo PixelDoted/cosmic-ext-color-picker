@@ -1,4 +1,4 @@
-app-title = Seletor de Cores do COSMIC
+app-title = Seletor de Cores para o COSMIC™ desktop
 
 ## Menu
 view = Exibir
