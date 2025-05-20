@@ -19,6 +19,7 @@ use log::info;
 pub struct ColorPicker {
     pub spaces: Vec<ColorSpace>,
     last_edited: usize,
+    hex_edit: Option<(usize, String)>,
     show_graphs: bool,
     expanded: bool,
 
@@ -41,6 +42,12 @@ pub enum Message {
     },
     AddSpace,
     RemoveSpace(usize),
+
+    EditHex {
+        space: usize,
+        hex: String,
+    },
+    SubmitHex(usize),
 
     ToggleGraphs,
     ToggleExpanded,
@@ -138,6 +145,7 @@ impl Application for ColorPicker {
         let mut app = ColorPicker {
             spaces: vec![ColorSpace::default()],
             last_edited: 0,
+            hex_edit: None,
             show_graphs: false,
             expanded: false,
 
@@ -190,6 +198,26 @@ impl Application for ColorPicker {
                 self.spaces.remove(index);
             }
 
+            Message::EditHex { space, hex } => {
+                self.hex_edit = Some((space, hex.clone()));
+
+                if let Ok(srgb) = hex::decode(&hex[1..]) {
+                    if srgb.len() == 3 {
+                        let rgb = [
+                            srgb[0] as f32 / 255.0,
+                            srgb[1] as f32 / 255.0,
+                            srgb[2] as f32 / 255.0,
+                        ];
+                        self.spaces[space].convert_from_rgb([rgb[0], rgb[1], rgb[2]]);
+                    }
+                } else {
+                    // Invalid Hex
+                }
+            }
+            Message::SubmitHex(_space) => {
+                self.hex_edit = None;
+            }
+
             Message::ToggleGraphs => {
                 self.show_graphs = !self.show_graphs;
             }
@@ -213,17 +241,15 @@ impl Application for ColorPicker {
                 return cosmic::task::future(async move {
                     let req = ashpd::desktop::Color::pick().send().await;
                     let Ok(req) = req else {
-                        println!("{req:?}");
+                        log::error!("{req:?}");
                         return Message::None;
                     };
 
                     let result = req.response();
                     let Ok(color) = result else {
-                        println!("{result:?}");
+                        log::error!("{result:?}");
                         return Message::None;
                     };
-
-                    println!("{index} {color:?}");
 
                     Message::PickScreenResponse((index, color))
                 });
@@ -345,7 +371,15 @@ impl Application for ColorPicker {
                     (norm_rgb[2] * 255.0) as u8,
                 ];
                 let srgb_text = format!("{}, {}, {}", srgb[0], srgb[1], srgb[2]);
-                let hex_text = format!("#{}", hex::encode(srgb));
+                let hex_text = if self
+                    .hex_edit
+                    .as_ref()
+                    .is_some_and(|(space, _)| *space == index)
+                {
+                    self.hex_edit.as_ref().unwrap().1.clone()
+                } else {
+                    format!("#{}", hex::encode(srgb))
+                };
 
                 let col = widget::ListColumn::new()
                     .add(
@@ -355,7 +389,11 @@ impl Application for ColorPicker {
                     )
                     .add(
                         widget::text_input("#000000", hex_text)
-                            .on_input(|_| Message::None)
+                            .on_input(move |s| Message::EditHex {
+                                hex: s,
+                                space: index,
+                            })
+                            .on_submit(Message::SubmitHex(index))
                             .label("Hex"),
                     );
 
