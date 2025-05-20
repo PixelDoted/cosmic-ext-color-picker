@@ -17,15 +17,6 @@
   <launchable type="desktop-id">io.github.pixeldoted.cosmic-ext-color-picker.desktop</launchable>
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/pixeldoted/cosmic-ext-color-picker/master/res/icons/hicolor/256x256/apps/io.github.pixeldoted.cosmic-ext-color-picker.svg</icon>
   <releases>
-      <release version="1.0.0" date="2025-01-08">
-          <description>
-              <p>First release</p>
-              <ul>
-                  <li>RGB, HSV, OKLAB, OKLCH and CMYK colorspaces</li>
-                  <li>Color Graphs (Experimental)</li>
-              </ul>
-          </description>
-      </release>
       <release version="1.1.0" date="2025-05-20">
           <description>
               <p>Release 1.1.0</p>
@@ -35,6 +26,15 @@
                   <li>Appended ™ to COSMIC™ in translations (#11)</li>
                   <li>Added Dutch translation (#8, #9)</li>
                   <li>Updated Portuguese translations (#7)</li>
+              </ul>
+          </description>
+      </release>
+      <release version="1.0.0" date="2025-01-08">
+          <description>
+              <p>First release</p>
+              <ul>
+                  <li>RGB, HSV, OKLAB, OKLCH and CMYK colorspaces</li>
+                  <li>Color Graphs (Experimental)</li>
               </ul>
           </description>
       </release>
