@@ -201,6 +201,10 @@ impl Application for ColorPicker {
             Message::EditHex { space, hex } => {
                 self.hex_edit = Some((space, hex.clone()));
 
+                if hex.is_empty() {
+                    return Task::none();
+                }
+
                 if let Ok(srgb) = hex::decode(&hex[1..]) {
                     if srgb.len() == 3 {
                         let rgb = [
