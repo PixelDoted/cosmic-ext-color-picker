@@ -1,4 +1,4 @@
-app-title = Sélecteur de couler COSMIC
+app-title = Sélecteur de couler COSMIC™
 
 ## Menu
 view = Vue
