@@ -3,6 +3,7 @@ app-title = Färgväljare för COSMIC™-skrivbordet
 ## Meny
 view = Visa
 graphs = Grafer
+expanded = expanderad
 menu-about = Om
 
 ## Om
