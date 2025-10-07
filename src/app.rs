@@ -38,7 +38,7 @@ pub enum Message {
     },
     ChangeColorSpace {
         index: usize,
-        selected: ColorSpaceCombo,
+        selected: usize,
     },
     AddSpace,
     RemoveSpace(usize),
@@ -47,7 +47,10 @@ pub enum Message {
         space: usize,
         hex: String,
     },
-    SubmitHex(usize),
+    SubmitHex {
+        space: usize,
+        hex: String,
+    },
 
     ToggleGraphs,
     ToggleExpanded,
@@ -96,9 +99,9 @@ impl Application for ColorPicker {
         &mut self.core
     }
 
-    fn header_start(&self) -> Vec<Element<Self::Message>> {
+    fn header_start(&self) -> Vec<Element<'_, Self::Message>> {
         vec![MenuBar::new(vec![menu::Tree::with_children(
-            menu::root(fl!("view")),
+            widget::RcElementWrapper::new(menu::root(fl!("view")).into()),
             menu::items(
                 &self.keybinds,
                 vec![
@@ -121,7 +124,7 @@ impl Application for ColorPicker {
         .into()]
     }
 
-    fn header_center(&self) -> Vec<Element<Self::Message>> {
+    fn header_center(&self) -> Vec<Element<'_, Self::Message>> {
         vec![widget::text::heading(fl!("app-title")).into()]
     }
 
@@ -183,7 +186,7 @@ impl Application for ColorPicker {
                 }
             },
             Message::ChangeColorSpace { index, selected } => {
-                self.spaces[index] = match selected {
+                self.spaces[index] = match self.colorspace_selections[selected] {
                     ColorSpaceCombo::Rgb => self.spaces[index].to_rgb(),
                     ColorSpaceCombo::Hsv => self.spaces[index].to_hsv(),
                     ColorSpaceCombo::Oklab => self.spaces[index].to_oklab(),
@@ -218,7 +221,7 @@ impl Application for ColorPicker {
                     // Invalid Hex
                 }
             }
-            Message::SubmitHex(_space) => {
+            Message::SubmitHex { .. } => {
                 self.hex_edit = None;
             }
 
@@ -280,7 +283,7 @@ impl Application for ColorPicker {
         Task::none()
     }
 
-    fn view(&self) -> Element<Self::Message> {
+    fn view(&self) -> Element<'_, Self::Message> {
         let mut contents = widget::row::with_capacity(self.spaces.len());
 
         for (colorspace, index) in self.spaces.iter().zip(0..) {
@@ -358,10 +361,7 @@ impl Application for ColorPicker {
                 )
                 .push(
                     widget::dropdown(&self.colorspace_names, Some(combo_selection), move |t| {
-                        Message::ChangeColorSpace {
-                            index,
-                            selected: self.colorspace_selections[t].clone(),
-                        }
+                        Message::ChangeColorSpace { index, selected: t }
                     })
                     .width(Length::Fill),
                 )
@@ -397,7 +397,7 @@ impl Application for ColorPicker {
                                 hex: s,
                                 space: index,
                             })
-                            .on_submit(Message::SubmitHex(index))
+                            .on_submit(move |hex| Message::SubmitHex { space: index, hex })
                             .label("Hex"),
                     );
 
@@ -449,7 +449,7 @@ impl Application for ColorPicker {
             .into()
     }
 
-    fn context_drawer(&self) -> Option<ContextDrawer<Self::Message>> {
+    fn context_drawer(&self) -> Option<ContextDrawer<'_, Self::Message>> {
         if !self.core.window.show_context {
             return None;
         }

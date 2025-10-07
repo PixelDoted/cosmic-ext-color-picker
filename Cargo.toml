@@ -16,7 +16,7 @@ hex = "0.4.3"
 
 [dependencies.libcosmic]
 git = "https://github.com/pop-os/libcosmic.git"
-rev = "e162c59"
+rev = "4c4eddb"
 default-features = false
 features = ["dbus-config", "tokio", "winit", "wgpu"]
 
