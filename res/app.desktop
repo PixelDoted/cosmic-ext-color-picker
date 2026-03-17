@@ -1,5 +1,6 @@
 [Desktop Entry]
 Name=Color Picker for COSMIC
+Name[cs]=Výběr barvy pro COSMIC
 Exec=cosmic-ext-color-picker %F
 Terminal=false
 Type=Application

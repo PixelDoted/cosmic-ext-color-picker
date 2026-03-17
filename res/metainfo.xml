@@ -10,9 +10,12 @@
   <url type="bugtracker">https://github.com/PixelDoted/cosmic-ext-color-picker/issues</url>
   <content_rating type="oars-1.1"/>
   <name>Color Picker for COSMIC™</name>
+  <name xml:lang="cs">Výběr barvy pro COSMIC™</name>
   <summary>A color picker for the COSMIC™ desktop</summary>
+  <summary xml:lang="cs">Výběr barvy pro prostředí COSMIC™</summary>
   <description>
     <p>A color picker for the COSMIC™ desktop</p>
+    <p xml:lang="cs">Výběr barvy pro prostředí COSMIC™</p>
   </description>
   <launchable type="desktop-id">io.github.pixeldoted.cosmic-ext-color-picker.desktop</launchable>
   <icon type="remote" height="256" width="256">https://raw.githubusercontent.com/pixeldoted/cosmic-ext-color-picker/master/res/icons/hicolor/256x256/apps/io.github.pixeldoted.cosmic-ext-color-picker.svg</icon>
@@ -43,6 +46,7 @@
       <screenshot type="default">
           <image>https://raw.githubusercontent.com/PixelDoted/cosmic-ext-color-picker/refs/heads/main/res/screenshots/theme_dark.png</image>
           <caption>Dark mode with RGB, HSV, OKLAB and OKLCH Colorspaces</caption>
+          <caption xml:lang="cs">Tmavý režim s barevnými prostory RGB, HSV, OKLAB a OKLCH</caption>
       </screenshot>
   </screenshots>
   <categories>
