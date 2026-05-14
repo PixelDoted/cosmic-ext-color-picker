@@ -9,9 +9,9 @@ use cosmic::app::context_drawer::ContextDrawer;
 use cosmic::app::{Core, Task};
 use cosmic::iced::alignment::{Horizontal, Vertical};
 use cosmic::iced::keyboard::{Key, Modifiers};
+use cosmic::iced::widget::scrollable::{Direction, Scrollbar};
 use cosmic::iced::{clipboard, Length};
 use cosmic::iced::{event, keyboard::Event as KeyEvent, Color, Event, Subscription};
-use cosmic::iced_widget::scrollable::{Direction, Scrollbar};
 use cosmic::widget::menu::{self, action::MenuAction, MenuBar};
 use cosmic::{theme, widget, Application, ApplicationExt, Apply, Element};
 use log::info;
@@ -349,7 +349,7 @@ impl Application for ColorPicker {
                                 .on_press(Message::PickScreenRequest(index))
                                 .tooltip("Pick a color from the screen"),
                         )
-                        .push(widget::Space::with_width(Length::Fill))
+                        .push(widget::Space::new().width(Length::Fill))
                         .push(
                             widget::button::icon(widget::icon::from_name(
                                 "user-trash-full-symbolic",
@@ -513,7 +513,7 @@ impl ColorPicker {
 
         ContextDrawer {
             title: Some("About".into()),
-            header_actions: vec![],
+            actions: None,
             header: None,
             content,
             footer: None,

@@ -3,11 +3,11 @@ use std::{f32::consts::FRAC_PI_2, ops::RangeInclusive};
 use cosmic::{
     iced::{
         border,
+        core::{layout, renderer, widget::tree},
         gradient::{ColorStop, Linear},
         mouse, touch, Background, Border, Color, Element, Event, Gradient, Length, Padding, Point,
         Rectangle, Shadow, Size,
     },
-    iced_core::{layout, renderer, widget::tree},
     theme,
     widget::{self, Widget},
 };
@@ -54,7 +54,7 @@ impl<'a, Message: 'a> From<ColorBlock> for cosmic::Element<'a, Message> {
             height,
         } = value;
 
-        widget::container(widget::Space::with_height(height))
+        widget::container(widget::Space::new().height(height))
             .class(theme::Container::custom(move |theme| {
                 let cosmic = theme.cosmic();
                 let radius = cosmic.corner_radii.radius_xs;
@@ -116,7 +116,7 @@ impl<Message, Theme, Renderer> Widget<Message, Theme, Renderer> for ColorSlider<
 where
     Renderer: renderer::Renderer,
 {
-    fn state(&self) -> cosmic::iced_core::widget::tree::State {
+    fn state(&self) -> cosmic::iced::core::widget::tree::State {
         tree::State::new(ColorSliderState { is_dragging: false })
     }
 
@@ -128,22 +128,22 @@ where
     }
 
     fn layout(
-        &self,
-        _tree: &mut cosmic::iced_core::widget::Tree,
+        &mut self,
+        _tree: &mut cosmic::iced::core::widget::Tree,
         _renderer: &Renderer,
-        limits: &cosmic::iced_core::layout::Limits,
-    ) -> cosmic::iced_core::layout::Node {
+        limits: &cosmic::iced::core::layout::Limits,
+    ) -> cosmic::iced::core::layout::Node {
         layout::Node::new(Size::new(limits.max().width, 15.0))
     }
 
     fn draw(
         &self,
-        _tree: &cosmic::iced_core::widget::Tree,
+        _tree: &cosmic::iced::core::widget::Tree,
         renderer: &mut Renderer,
         _theme: &Theme,
         _style: &renderer::Style,
-        layout: cosmic::iced_core::Layout<'_>,
-        _cursor: cosmic::iced_core::mouse::Cursor,
+        layout: cosmic::iced::core::Layout<'_>,
+        _cursor: cosmic::iced::core::mouse::Cursor,
         _viewport: &cosmic::iced::Rectangle,
     ) {
         let bounds = layout.bounds();
@@ -164,6 +164,7 @@ where
                 shadow: Shadow {
                     ..Default::default()
                 },
+                snap: false,
             },
             self.background,
         );
@@ -177,22 +178,23 @@ where
                     radius: 10f32.into(),
                 },
                 shadow: Shadow::default(),
+                snap: false,
             },
             Background::Color(Color::TRANSPARENT),
         );
     }
 
-    fn on_event(
+    fn update(
         &mut self,
-        tree: &mut cosmic::iced_core::widget::Tree,
-        event: cosmic::iced::Event,
+        tree: &mut cosmic::iced::core::widget::Tree,
+        event: &cosmic::iced::Event,
         layout: layout::Layout<'_>,
-        cursor: cosmic::iced_core::mouse::Cursor,
+        cursor: cosmic::iced::core::mouse::Cursor,
         _renderer: &Renderer,
-        _clipboard: &mut dyn cosmic::iced_core::Clipboard,
-        shell: &mut cosmic::iced_core::Shell<'_, Message>,
+        _clipboard: &mut dyn cosmic::iced::core::Clipboard,
+        shell: &mut cosmic::iced::core::Shell<'_, Message>,
         _viewport: &Rectangle,
-    ) -> cosmic::iced_core::event::Status {
+    ) {
         let state = tree.state.downcast_mut::<ColorSliderState>();
 
         let mut change = |position: &Point| {
@@ -210,14 +212,14 @@ where
                 if let Some(position) = cursor.position_over(layout.bounds()) {
                     state.is_dragging = true;
                     change(&position);
-                    return cosmic::iced_core::event::Status::Captured;
+                    shell.capture_event();
                 }
             }
             Event::Mouse(mouse::Event::ButtonReleased(mouse::Button::Left))
             | Event::Touch(touch::Event::FingerLifted { .. } | touch::Event::FingerLost { .. }) => {
                 if state.is_dragging {
                     state.is_dragging = false;
-                    return cosmic::iced_core::event::Status::Captured;
+                    shell.capture_event();
                 }
             }
             Event::Mouse(mouse::Event::CursorMoved { .. })
@@ -227,7 +229,7 @@ where
                         change(position);
                     }
 
-                    return cosmic::iced_core::event::Status::Captured;
+                    shell.capture_event();
                 }
             }
 
@@ -241,23 +243,21 @@ where
                             shell.publish((self.on_change)(self.value));
                         }
                     }
-                    return cosmic::iced_core::event::Status::Captured;
+                    shell.capture_event();
                 }
             }
             _ => (),
         }
-
-        cosmic::iced_core::event::Status::Ignored
     }
 
     fn mouse_interaction(
         &self,
         tree: &tree::Tree,
         layout: layout::Layout<'_>,
-        cursor: cosmic::iced_core::mouse::Cursor,
+        cursor: cosmic::iced::core::mouse::Cursor,
         _viewport: &Rectangle,
         _renderer: &Renderer,
-    ) -> cosmic::iced_core::mouse::Interaction {
+    ) -> cosmic::iced::core::mouse::Interaction {
         let state = tree.state.downcast_ref::<ColorSliderState>();
 
         if state.is_dragging {

@@ -143,7 +143,7 @@ impl Oklab {
 
         if show_graphs {
             lightness = lightness.push(
-                cosmic::iced_widget::shader(shader::ColorGraph::<0> {
+                cosmic::iced::widget::shader(shader::ColorGraph::<0> {
                     lightness: self.values[0],
                     green_red: self.values[1],
                     blue_yellow: self.values[2],
@@ -151,7 +151,7 @@ impl Oklab {
                 .width(Length::Fill),
             );
             green_red = green_red.push(
-                cosmic::iced_widget::shader(shader::ColorGraph::<1> {
+                cosmic::iced::widget::shader(shader::ColorGraph::<1> {
                     lightness: self.values[0],
                     green_red: self.values[1],
                     blue_yellow: self.values[2],
@@ -159,7 +159,7 @@ impl Oklab {
                 .width(Length::Fill),
             );
             blue_yellow = blue_yellow.push(
-                cosmic::iced_widget::shader(shader::ColorGraph::<2> {
+                cosmic::iced::widget::shader(shader::ColorGraph::<2> {
                     lightness: self.values[0],
                     green_red: self.values[1],
                     blue_yellow: self.values[2],

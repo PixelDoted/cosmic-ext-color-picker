@@ -163,7 +163,7 @@ impl Oklch {
 
         if show_graphs {
             lightness = lightness.push(
-                cosmic::iced_widget::shader(shader::ColorGraph::<0> {
+                cosmic::iced::widget::shader(shader::ColorGraph::<0> {
                     lightness: self.values[0],
                     chroma: self.values[1],
                     hue: self.values[2],
@@ -171,7 +171,7 @@ impl Oklch {
                 .width(Length::Fill),
             );
             chroma = chroma.push(
-                cosmic::iced_widget::shader(shader::ColorGraph::<1> {
+                cosmic::iced::widget::shader(shader::ColorGraph::<1> {
                     lightness: self.values[0],
                     chroma: self.values[1],
                     hue: self.values[2],
@@ -179,7 +179,7 @@ impl Oklch {
                 .width(Length::Fill),
             );
             hue = hue.push(
-                cosmic::iced_widget::shader(shader::ColorGraph::<2> {
+                cosmic::iced::widget::shader(shader::ColorGraph::<2> {
                     lightness: self.values[0],
                     chroma: self.values[1],
                     hue: self.values[2],

@@ -1,7 +1,7 @@
-use cosmic::{
-    iced::{wgpu, Rectangle},
-    iced_wgpu::graphics::Viewport,
-    iced_widget::shader::{self, Storage},
+use cosmic::iced::{
+    wgpu,
+    widget::shader::{self, Storage, Viewport},
+    Rectangle,
 };
 
 use crate::shaders::ShaderPipeline;
@@ -20,7 +20,7 @@ impl<const M: u32, Message> shader::Program<Message> for ColorGraph<M> {
     fn draw(
         &self,
         _state: &Self::State,
-        _cursor: cosmic::iced_core::mouse::Cursor,
+        _cursor: cosmic::iced::mouse::Cursor,
         _bounds: cosmic::iced::Rectangle,
     ) -> Self::Primitive {
         Primitive::<M>::new(self.lightness, self.chroma, self.hue)
@@ -46,42 +46,34 @@ impl<const M: u32> Primitive<M> {
 }
 
 impl<const M: u32> shader::Primitive for Primitive<M> {
+    type Pipeline = ShaderPipeline<Uniforms, M>;
+
     fn prepare(
         &self,
+        pipeline: &mut Self::Pipeline,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
-        format: wgpu::TextureFormat,
-        storage: &mut Storage,
         _bounds: &Rectangle,
         _viewport: &Viewport,
     ) {
-        if !storage.has::<ShaderPipeline<Uniforms, M>>() {
-            storage.store(ShaderPipeline::<Uniforms, M>::new(
-                device,
-                format,
-                include_str!("oklch.wgsl"),
-            ));
-        }
-
-        let pipeline = storage.get_mut::<ShaderPipeline<Uniforms, M>>().unwrap();
+        pipeline.initialize(device, queue, include_str!("oklch.wgsl"));
         pipeline.write(queue, &self.uniforms);
     }
 
     fn render(
         &self,
+        pipeline: &Self::Pipeline,
         encoder: &mut wgpu::CommandEncoder,
-        storage: &Storage,
         target: &wgpu::TextureView,
         clip_bounds: &Rectangle<u32>,
     ) {
-        let pipeline = storage.get::<ShaderPipeline<Uniforms, M>>().unwrap();
         pipeline.render(target, encoder, clip_bounds);
     }
 }
 
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 #[repr(C)]
-struct Uniforms {
+pub struct Uniforms {
     lightness: f32,
     chroma: f32,
     hue: f32,

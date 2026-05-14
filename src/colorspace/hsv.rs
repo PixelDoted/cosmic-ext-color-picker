@@ -171,7 +171,7 @@ impl Hsv {
             content = content.push(
                 widget::container(
                     widget::container(
-                        cosmic::iced_widget::shader(shader::ColorGraph {
+                        cosmic::iced::widget::shader(shader::ColorGraph {
                             hue: self.values[0],
                             saturation: self.values[1],
                             value: self.values[2],

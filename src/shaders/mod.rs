@@ -4,17 +4,21 @@ pub mod oklch;
 
 use std::marker::PhantomData;
 
-use cosmic::iced::{wgpu, Rectangle};
+use cosmic::iced::{wgpu, widget, Rectangle};
 
 pub struct ShaderPipeline<T, const ID: u32> {
-    pipeline: wgpu::RenderPipeline,
+    pipeline: Option<wgpu::RenderPipeline>,
+    pipeline_layout: wgpu::PipelineLayout,
     bind_group: wgpu::BindGroup,
     data: wgpu::Buffer,
+    texture_format: wgpu::TextureFormat,
     phantom: PhantomData<T>,
 }
 
-impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
-    pub fn new(device: &wgpu::Device, format: wgpu::TextureFormat, shader: &str) -> Self {
+impl<T: bytemuck::Pod + Send + Sync, const ID: u32> widget::shader::Pipeline
+    for ShaderPipeline<T, ID>
+{
+    fn new(device: &wgpu::Device, _queue: &wgpu::Queue, format: wgpu::TextureFormat) -> Self {
         let data_buffer = device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("shader data buffer"),
             size: std::mem::size_of::<T>() as u64,
@@ -49,9 +53,22 @@ impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
         let layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("data pipeline layout"),
             bind_group_layouts: &[&uniform_bind_group_layout],
-            push_constant_ranges: &[],
+            immediate_size: 0,
         });
 
+        Self {
+            pipeline: None,
+            pipeline_layout: layout,
+            bind_group: uniform_bind_group,
+            data: data_buffer,
+            texture_format: format,
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<T: bytemuck::Pod + Send + Sync, const ID: u32> ShaderPipeline<T, ID> {
+    pub fn initialize(&mut self, device: &wgpu::Device, _queue: &wgpu::Queue, shader: &str) {
         let vertex_shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("graph vertex shader"),
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(include_str!(
@@ -64,38 +81,33 @@ impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
             source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(shader)),
         });
 
-        let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("graph pipeline"),
-            layout: Some(&layout),
-            vertex: wgpu::VertexState {
-                module: &vertex_shader,
-                entry_point: "vs_main",
-                buffers: &[],
-                compilation_options: wgpu::PipelineCompilationOptions::default(),
-            },
-            primitive: wgpu::PrimitiveState::default(),
-            depth_stencil: None,
-            multisample: wgpu::MultisampleState::default(),
-            fragment: Some(wgpu::FragmentState {
-                module: &shader,
-                entry_point: "fs_main",
-                targets: &[Some(wgpu::ColorTargetState {
-                    format,
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-                compilation_options: wgpu::PipelineCompilationOptions::default(),
+        self.pipeline = Some(
+            device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+                label: Some("graph pipeline"),
+                layout: Some(&self.pipeline_layout),
+                vertex: wgpu::VertexState {
+                    module: &vertex_shader,
+                    entry_point: Some("vs_main"),
+                    buffers: &[],
+                    compilation_options: wgpu::PipelineCompilationOptions::default(),
+                },
+                primitive: wgpu::PrimitiveState::default(),
+                depth_stencil: None,
+                multisample: wgpu::MultisampleState::default(),
+                fragment: Some(wgpu::FragmentState {
+                    module: &shader,
+                    entry_point: Some("fs_main"),
+                    targets: &[Some(wgpu::ColorTargetState {
+                        format: self.texture_format,
+                        blend: Some(wgpu::BlendState::ALPHA_BLENDING),
+                        write_mask: wgpu::ColorWrites::ALL,
+                    })],
+                    compilation_options: wgpu::PipelineCompilationOptions::default(),
+                }),
+                cache: None,
+                multiview_mask: None,
             }),
-            multiview: None,
-            cache: None,
-        });
-
-        Self {
-            pipeline,
-            bind_group: uniform_bind_group,
-            data: data_buffer,
-            phantom: PhantomData,
-        }
+        );
     }
 
     pub fn write(&self, queue: &wgpu::Queue, data: &T) {
@@ -117,13 +129,15 @@ impl<T: bytemuck::Pod, const ID: u32> ShaderPipeline<T, ID> {
                     load: wgpu::LoadOp::Load,
                     store: wgpu::StoreOp::Store,
                 },
+                depth_slice: None,
             })],
             depth_stencil_attachment: None,
             timestamp_writes: None,
             occlusion_query_set: None,
+            multiview_mask: None,
         });
 
-        pass.set_pipeline(&self.pipeline);
+        pass.set_pipeline(self.pipeline.as_ref().unwrap());
         #[allow(clippy::cast_precision_loss)]
         pass.set_viewport(
             viewport.x as f32,
