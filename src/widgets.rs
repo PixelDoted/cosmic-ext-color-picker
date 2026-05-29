@@ -17,6 +17,7 @@ pub struct ColorBlock {
     border: [bool; 4],
     width: Length,
     height: Length,
+    tooltip: Option<String>,
 }
 
 impl ColorBlock {
@@ -26,6 +27,7 @@ impl ColorBlock {
             border: [true; 4],
             width: Length::Fill,
             height: Length::Fill,
+            tooltip: None,
         }
     }
 
@@ -43,6 +45,11 @@ impl ColorBlock {
         self.height = height.into();
         self
     }
+
+    pub fn tooltip<T: ToString>(mut self, tooltip: T) -> Self {
+        self.tooltip = Some(tooltip.to_string());
+        self
+    }
 }
 
 impl<'a, Message: 'a> From<ColorBlock> for cosmic::Element<'a, Message> {
@@ -52,9 +59,10 @@ impl<'a, Message: 'a> From<ColorBlock> for cosmic::Element<'a, Message> {
             border,
             width,
             height,
+            tooltip,
         } = value;
 
-        widget::container(widget::Space::new().height(height))
+        let container = widget::container(widget::Space::new().height(height))
             .class(theme::Container::custom(move |theme| {
                 let cosmic = theme.cosmic();
                 let radius = cosmic.corner_radii.radius_xs;
@@ -76,8 +84,20 @@ impl<'a, Message: 'a> From<ColorBlock> for cosmic::Element<'a, Message> {
                     ..Default::default()
                 }
             }))
-            .width(width)
+            .width(width);
+
+        if let Some(tooltip_text) = tooltip {
+            let w_tooltip = widget::container(widget::text(tooltip_text));
+
+            widget::tooltip(
+                container,
+                w_tooltip,
+                widget::tooltip::Position::FollowCursor,
+            )
             .into()
+        } else {
+            container.into()
+        }
     }
 }
 

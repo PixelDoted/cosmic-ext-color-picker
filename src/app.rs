@@ -329,12 +329,14 @@ impl Application for ColorPicker {
                         .push(
                             color_block(Color::from_rgb(rgb[0], rgb[1], rgb[2]))
                                 .border([true, false, false, true])
-                                .height(100.0),
+                                .height(100.0)
+                                .tooltip("Linear"),
                         )
                         .push(
                             color_block(Color::from_rgb(norm_rgb[0], norm_rgb[1], norm_rgb[2]))
                                 .border([false, true, true, false])
-                                .height(100.0),
+                                .height(100.0)
+                                .tooltip("Normalized"),
                         ),
                 )
                 .push(
