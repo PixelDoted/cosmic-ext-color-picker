@@ -5,6 +5,7 @@ mod hsv;
 mod oklab;
 mod oklch;
 mod rgb;
+mod temperature;
 
 use std::fmt::Display;
 
@@ -13,6 +14,7 @@ pub use hsv::Hsv;
 pub use oklab::Oklab;
 pub use oklch::Oklch;
 pub use rgb::Rgb;
+pub use temperature::Temperature;
 
 use crate::fl;
 
@@ -30,6 +32,7 @@ pub enum ColorSpaceCombo {
     Oklab,
     Oklch,
     Cmyk,
+    Temperature,
 }
 
 impl Display for ColorSpaceCombo {
@@ -40,6 +43,7 @@ impl Display for ColorSpaceCombo {
             ColorSpaceCombo::Oklab => f.write_str(&fl!("oklab")),
             ColorSpaceCombo::Oklch => f.write_str(&fl!("oklch")),
             ColorSpaceCombo::Cmyk => f.write_str(&fl!("cmyk")),
+            ColorSpaceCombo::Temperature => f.write_str(&fl!("temperature")),
         }
     }
 }
@@ -50,6 +54,7 @@ pub enum ColorSpace {
     Oklab(Oklab),
     Oklch(Oklch),
     Cmyk(Cmyk),
+    Temperature(Temperature),
 }
 
 impl Default for ColorSpace {
@@ -66,6 +71,7 @@ impl ColorSpace {
             ColorSpace::Oklab(oklab) => oklab.change_value(index, value),
             ColorSpace::Oklch(oklch) => oklch.change_value(index, value),
             ColorSpace::Cmyk(cmyk) => cmyk.change_value(index, value),
+            ColorSpace::Temperature(temperature) => temperature.change_value(index, value),
         }
     }
 
@@ -76,6 +82,7 @@ impl ColorSpace {
             ColorSpace::Oklab(oklab) => oklab.change_string(index, string),
             ColorSpace::Oklch(oklch) => oklch.change_string(index, string),
             ColorSpace::Cmyk(cmyk) => cmyk.change_string(index, string),
+            ColorSpace::Temperature(temperature) => temperature.change_string(index, string),
         }
     }
 }
@@ -106,6 +113,11 @@ impl ColorSpace {
         Self::Cmyk(Cmyk::from_rgb(rgb))
     }
 
+    pub fn to_temperature(&self) -> ColorSpace {
+        let rgb = self.get_rgb();
+        Self::Temperature(Temperature::from_rgb(rgb))
+    }
+
     pub fn convert_from_rgb(&mut self, rgb_in: [f32; 3]) {
         match self {
             ColorSpace::Rgb(rgb) => *rgb = rgb::Rgb::from_rgb(rgb_in),
@@ -113,6 +125,9 @@ impl ColorSpace {
             ColorSpace::Oklab(oklab) => *oklab = oklab::Oklab::from_rgb(rgb_in),
             ColorSpace::Oklch(oklch) => *oklch = oklch::Oklch::from_rgb(rgb_in),
             ColorSpace::Cmyk(cmyk) => *cmyk = cmyk::Cmyk::from_rgb(rgb_in),
+            ColorSpace::Temperature(temperature) => {
+                *temperature = temperature::Temperature::from_rgb(rgb_in)
+            }
         }
     }
 
@@ -123,6 +138,7 @@ impl ColorSpace {
             ColorSpace::Oklab(oklab) => oklab.to_rgb(),
             ColorSpace::Oklch(oklch) => oklch.to_rgb(),
             ColorSpace::Cmyk(cmyk) => cmyk.to_rgb(),
+            ColorSpace::Temperature(temperature) => temperature.to_rgb(),
         }
     }
 }

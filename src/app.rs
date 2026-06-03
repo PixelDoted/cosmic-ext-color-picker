@@ -158,6 +158,7 @@ impl Application for ColorPicker {
                 ColorSpaceCombo::Oklab,
                 ColorSpaceCombo::Oklch,
                 ColorSpaceCombo::Cmyk,
+                ColorSpaceCombo::Temperature,
             ],
             colorspace_names: vec![],
             keybinds,
@@ -192,6 +193,7 @@ impl Application for ColorPicker {
                     ColorSpaceCombo::Oklab => self.spaces[index].to_oklab(),
                     ColorSpaceCombo::Oklch => self.spaces[index].to_oklch(),
                     ColorSpaceCombo::Cmyk => self.spaces[index].to_cmyk(),
+                    ColorSpaceCombo::Temperature => self.spaces[index].to_temperature(),
                 };
             }
             Message::AddSpace => {
@@ -312,6 +314,11 @@ impl Application for ColorPicker {
                     cmyk.to_rgb(),
                     cmyk.view(self.show_graphs),
                     4, //ColorSpaceCombo::Cmyk,
+                ),
+                ColorSpace::Temperature(temperature) => (
+                    temperature.to_rgb(),
+                    temperature.view(self.show_graphs),
+                    5, //ColorSpaceCombo::Temperature
                 ),
             };
 
@@ -480,6 +487,7 @@ impl ColorPicker {
             ColorSpace::Oklab(oklab) => oklab.copy_to_clipboard(),
             ColorSpace::Oklch(oklch) => oklch.copy_to_clipboard(),
             ColorSpace::Cmyk(cmyk) => cmyk.copy_to_clipboard(),
+            ColorSpace::Temperature(temperature) => temperature.copy_to_clipboard(),
         };
 
         info!("Copying \"{}\" to clipboard", contents);

@@ -15,6 +15,7 @@ hsv = HSV
 oklab = OKLAB
 oklch = OKLCH
 cmyk = CMYK
+temperature = Temperature
 
 ## Colors
 red = Red
@@ -33,3 +34,4 @@ saturation = Saturation
 lightness = Lightness
 value = Value
 chroma = Chroma
+kelvin = Kelvin
